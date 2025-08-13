@@ -8,10 +8,9 @@
 </head>
 <body>
   <div class="menu-bar">
-    <button class="menu-btn active" data-page="basic">基本資料</button>
+    <button class="menu-btn" data-page="basic">基本資料</button>
     <button class="menu-btn" data-page="scene">現場狀況</button>
-    <button class="menu-btn" data-page="treatment">急救處置</button>
-    <button class="menu-btn" data-page="patient">病患相關</button>
+    <button class="menu-btn" data-page="assessment">評估與處置</button>
     <button class="menu-btn" data-page="vital">生命徵象</button>
     <button class="menu-btn" data-page="sign">相關簽名</button>
   </div>
@@ -152,9 +151,9 @@
     <div class="page" id="page-scene" style="display:none">
       <div class="card">
         <h2>現場狀況</h2>
-        <div class="row"><span class="label">地點</span><input type="text" id="scene-location"></div>
+        <div class="row"><span class="label">地點</span><input type="text" id="scene-location"><button type="button" id="scene-location-gps-btn" style="margin-left:8px;">定位</button></div>
         <div class="row"><span class="label">狀況描述</span><input type="text" id="scene-status"></div>
-        <div class="row"><span class="label">到場時間</span><input type="time" id="scene-arrival"></div>
+        <div class="row"><span class="label">到場時間</span><input type="time" id="scene-arrival"><button type="button" id="scene-arrival-now" style="margin-left:8px;">現在</button></div>
       </div>
     </div>
     <!-- 急救處置分頁 -->
@@ -162,7 +161,7 @@
       <div class="card">
         <h2>急救處置</h2>
         <div class="row"><span class="label">處置項目</span><input type="text" id="treatment-item"></div>
-        <div class="row"><span class="label">處置時間</span><input type="time" id="treatment-time"></div>
+        <div class="row"><span class="label">處置時間</span><input type="time" id="treatment-time"><button type="button" id="treatment-time-now" style="margin-left:8px;">現在</button></div>
       </div>
     </div>
     <!-- 病患相關分頁 -->
@@ -177,32 +176,36 @@
     <div class="page" id="page-vital" style="display:none">
       <div class="card">
         <h2>生命徵象</h2>
-        <div class="row"><span class="label">時間</span><input type="time" id="vital-time"></div>
-        <div class="row"><span class="label">意識狀態</span>
-          <select id="vital-consciousness">
-            <option value="">請選擇</option>
-            <option value="清">清</option>
-            <option value="聲">聲</option>
-            <option value="痛">痛</option>
-            <option value="否">否</option>
-          </select>
+        <div class="vital-signs-row">
+          <label>時間</label>
+          <input type="time">
+          <button type="button" id="vital-time-now" style="margin-left:8px;">現在</button>
+          
+          <label>血壓</label>
+          <input type="text" placeholder="收縮壓/舒張壓">
+          
+          <label>呼吸</label>
+          <input type="text">
+          
+          <label>脈搏</label>
+          <input type="text">
+          
+          <label>體溫</label>
+          <input type="text">
+          
+          <label>GCS</label>
+          <input type="text">
+          
+          <label>SpO2</label>
+          <input type="text">
+          
+          <label>血糖</label>
+          <input type="text">
+          
+          <label>意識</label>
+          <input type="text">
         </div>
-        <div class="row"><span class="label">呼吸</span><input type="number" id="vital-breath"></div>
-        <div class="row"><span class="label">脈搏</span><input type="number" id="vital-pulse"></div>
-        <div class="row"><span class="label">血壓</span>
-          <input type="number" id="vital-bp-high" placeholder="收縮壓">
-          <span style="margin:0 4px;"></span>
-          <input type="number" id="vital-bp-low" placeholder="舒張壓">
-        </div>
-        <div class="row"><span class="label">EVM</span><input type="number" id="vital-evm"></div>
-        <div class="row"><span class="label">血氧</span><input type="number" id="vital-spo2"></div>
-        <div class="row"><span class="label">體溫</span>
-          <input type="number" id="vital-temp" step="0.1">
-          <select id="vital-temp-type" style="width:60px;">
-            <option value="額">額溫</option>
-            <option value="耳">耳溫</option>
-          </select>
-        </div>
+        <button id="add-vital-row">新增紀錄</button>
       </div>
     </div>
     <!-- 相關簽名分頁 -->
@@ -211,13 +214,90 @@
         <h2>相關簽名</h2>
         <div class="row">
           <span class="label">患者簽名</span>
-          <canvas id="signature-patient" width="300" height="100" style="border:1px solid #ccc; background:#fff;"></canvas>
+          <canvas id="signature-patient" width="150" height="50" class="signature-canvas"></canvas>
           <button type="button" id="clear-signature-patient" style="margin-left:10px;">清除</button>
         </div>
+        <div id="modal-signature-patient" class="signature-modal">
+          <div class="signature-modal-content">
+            <canvas id="modal-canvas-patient" width="300" height="100"></canvas>
+            <div style="text-align:right;margin-top:8px;">
+              <button id="modal-signature-patient-ok">完成</button>
+              <button id="modal-signature-patient-cancel">取消</button>
+            </div>
+          </div>
+        </div>
+        <div class="emt-signature-group">
+          <div class="emt-signature-item">
+            <div class="row" style="flex-direction:column;align-items:center;gap:6px;">
+              <span class="label" style="text-align:center;width:auto;">救護員簽名1</span>
+              <canvas id="signature-emt1" width="150" height="50" class="signature-canvas"></canvas>
+              <button type="button" id="clear-signature-emt1" style="margin-top:6px;">清除</button>
+            </div>
+          </div>
+          <div class="emt-signature-item">
+            <div class="row" style="flex-direction:column;align-items:center;gap:6px;">
+              <span class="label" style="text-align:center;width:auto;">救護員簽名2</span>
+              <canvas id="signature-emt2" width="150" height="50" class="signature-canvas"></canvas>
+              <button type="button" id="clear-signature-emt2" style="margin-top:6px;">清除</button>
+            </div>
+          </div>
+          <div class="emt-signature-item">
+            <div class="row" style="flex-direction:column;align-items:center;gap:6px;">
+              <span class="label" style="text-align:center;width:auto;">救護員簽名3</span>
+              <canvas id="signature-emt3" width="150" height="50" class="signature-canvas"></canvas>
+              <button type="button" id="clear-signature-emt3" style="margin-top:6px;">清除</button>
+            </div>
+          </div>
+        </div>
+        <button id="submit-btn" style="margin-top:20px;">送出</button>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <h2>拒絕送醫</h2>
         <div class="row">
-          <span class="label">救護員簽名</span>
-          <canvas id="signature-emt" width="300" height="100" style="border:1px solid #ccc; background:#fff;"></canvas>
-          <button type="button" id="clear-signature-emt" style="margin-left:10px;">清除</button>
+          <span class="label">患者簽名</span>
+          <canvas id="signature-patient" width="150" height="50" class="signature-canvas"></canvas>
+          <button type="button" id="clear-signature-patient" style="margin-left:10px;">清除</button>
+        </div>
+        <p>拒絕送醫簽名</p>
+      </div>
+    </div>    
+    <!-- 評估與處置分頁 -->
+    <div class="page" id="page-assessment" style="display:none">
+      <div class="card">
+        <h2>評估與處置</h2>
+        <div class="row">
+          <span class="label">主訴</span>
+          <input type="text" id="assessment-chief-complaint">
+        </div>
+        <div class="row">
+          <span class="label">觀察到的徵象</span>
+          <select id="symptoms">
+            <option value="">請選擇</option>
+            <option value="fever">發燒</option>
+            <option value="cough">咳嗽</option>
+            <option value="breathing">呼吸困難</option>
+            <!-- Add more symptoms as needed -->
+          </select>
+        </div>
+        <div class="row">
+          <span class="label">呼吸道處置</span>
+          <select id="airway-treatments">
+            <option value="">請選擇</option>
+            <option value="intubation">氣管插管</option>
+            <option value="oropharyngeal">口咽管</option>
+            <option value="suction">Suction</option>
+            <!-- Add more airway treatments as needed -->
+          </select>
+        </div>
+        <div class="row">
+          <span class="label">循環/藥品處置</span>
+          <select id="circulation-treatments">
+            <option value="">請選擇</option>
+            <option value="cpr">CPR</option>
+            <option value="aed">AED</option>
+            <option value="iv">IV</option>
+            <!-- Add more circulation treatments as needed -->
+          </select>
         </div>
       </div>
     </div>
@@ -226,7 +306,6 @@
     <span id="save-status" style="color:#00bcd4;margin-left:20px;"></span>
   </div>
   <div id="finish-info" style="text-align:center;color:#00bcd4;margin-bottom:20px;"></div>
-  <button id="finish-btn" style="position:fixed;right:32px;bottom:32px;z-index:1000;padding:18px 32px;font-size:1.2em;">完成返隊</button>
   <script src="index.js"></script>
 </body>
 </html>
