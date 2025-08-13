@@ -245,6 +245,10 @@ body {
   color: #fff;
   font-size: 0.9em;
 }
+.vital-signs-row input[type="time"] {
+  min-width: 130px;
+  max-width: 150px;
+}
 .vital-signs-row button {
   padding: 4px 8px;
   font-size: 0.8em;
